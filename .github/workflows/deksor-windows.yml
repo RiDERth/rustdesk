@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: deksor-windows
+  cancel-in-progress: true
+
 # in this file!
 
 env:
@@ -97,7 +101,7 @@ jobs:
         working-directory: flutter
         run: |
           flutter pub get
-          flutter analyze --no-fatal-infos --no-fatal-warnings lib/desktop/widgets/deksor_gate.dart lib/desktop/pages/desktop_home_page.dart lib/common.dart
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib/desktop/widgets/deksor_gate.dart lib/desktop/widgets/deksor_update.dart lib/desktop/pages/desktop_home_page.dart lib/common.dart
 
   build-for-windows-flutter:
     name: ${{ matrix.job.target }}
@@ -410,6 +414,8 @@ jobs:
           mkdir -p ./SignOutput
           mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.exe
           cp ./SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.exe ./SignOutput/DEKSOR.exe
+          grep -oP "kDeksorVersion = '\K[0-9.]+" flutter/lib/desktop/widgets/deksor_gate.dart > ./SignOutput/deksor-version.txt
+          cat ./SignOutput/deksor-version.txt
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
@@ -515,5 +521,6 @@ jobs:
             ./SignOutput/rustdesk-*.msi
             ./SignOutput/rustdesk-*.exe
             ./SignOutput/DEKSOR.exe
+            ./SignOutput/deksor-version.txt
 
   # The fallback for the flutter version, we use Sciter for 32bit Windows.
