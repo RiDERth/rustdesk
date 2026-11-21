@@ -101,7 +101,7 @@ jobs:
         working-directory: flutter
         run: |
           flutter pub get
-          flutter analyze --no-fatal-infos --no-fatal-warnings lib/desktop/widgets/deksor_gate.dart lib/desktop/widgets/deksor_update.dart lib/desktop/pages/desktop_home_page.dart lib/desktop/pages/connection_page.dart lib/common.dart
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib/desktop/widgets/deksor_gate.dart lib/desktop/widgets/deksor_update.dart lib/desktop/pages/desktop_home_page.dart lib/desktop/pages/connection_page.dart lib/desktop/pages/desktop_setting_page.dart lib/common.dart
 
   build-for-windows-flutter:
     name: ${{ matrix.job.target }}
