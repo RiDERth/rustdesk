@@ -12,6 +12,7 @@ import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/desktop/pages/connection_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_setting_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_tab_page.dart';
+import 'package:flutter_hbb/desktop/pages/deksor_home.dart';
 import 'package:flutter_hbb/desktop/widgets/deksor_gate.dart';
 import 'package:flutter_hbb/desktop/widgets/deksor_update.dart';
 import 'package:flutter_hbb/desktop/widgets/update_progress.dart';
@@ -61,6 +62,18 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   Widget build(BuildContext context) {
     super.build(context);
     final isIncomingOnly = bind.isIncomingOnly();
+    if (!isIncomingOnly && !bind.isOutgoingOnly()) {
+      return _buildBlock(
+        child: ChangeNotifierProvider.value(
+          value: gFFI.serverModel,
+          child: DeksorHome(
+            passwordBoard: Builder(builder: (context) => buildPasswordBoard(context)),
+            helpCards: Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
+            menuButton: buildPopupMenu(context),
+          ),
+        ),
+      );
+    }
     return _buildBlock(
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
