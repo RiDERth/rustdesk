@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -8,6 +9,7 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/peer_tab_page.dart';
 import 'package:flutter_hbb/desktop/widgets/deksor_gate.dart';
 import 'package:flutter_hbb/desktop/widgets/deksor_update.dart';
+import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,6 +85,7 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
   final TextEditingController _idInput = TextEditingController();
   final FocusNode _idFocus = FocusNode();
   Timer? _clipTimer;
+  Timer? _statusTimer;
   Timer? _copiedTimer;
   String _clip = '';
   bool _copied = false;
@@ -105,6 +108,8 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
     _idFocus.addListener(() {
       if (mounted) setState(() {});
     });
+    _statusTimer = periodic_immediate(
+        const Duration(seconds: 1), () async => _updateStatus());
     _readClipboard();
     _clipTimer =
         Timer.periodic(const Duration(seconds: 2), (_) => _readClipboard());
@@ -113,6 +118,7 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
   @override
   void dispose() {
     _clipTimer?.cancel();
+    _statusTimer?.cancel();
     _copiedTimer?.cancel();
     _loop.dispose();
     _intro.dispose();
@@ -123,6 +129,20 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
 
   String get _myId =>
       gFFI.serverModel.serverId.text.replaceAll(RegExp(r'\s'), '');
+
+  Future<void> _updateStatus() async {
+    try {
+      final status = jsonDecode(await bind.mainGetConnectStatus())
+          as Map<String, dynamic>;
+      final n = status['status_num'] as int;
+      stateGlobal.svcStatus.value = n == 1
+          ? SvcStatus.ready
+          : (n == 0 ? SvcStatus.connecting : SvcStatus.notReady);
+      try {
+        stateGlobal.videoConnCount.value = status['video_conn_count'] as int;
+      } catch (_) {}
+    } catch (_) {}
+  }
 
   Future<void> _readClipboard() async {
     try {
@@ -289,13 +309,22 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
   }
 
   Widget _statusPill() {
+    final stopped = Get.isRegistered<RxBool>(tag: 'stop-service')
+        ? Get.find<RxBool>(tag: 'stop-service')
+        : false.obs;
     return Obx(() {
       final s = stateGlobal.svcStatus.value;
+      final off = stopped.value;
       final Color dot;
       final Color bg;
       final Color fg;
       final String label;
-      if (s == SvcStatus.ready) {
+      if (off) {
+        dot = _red;
+        bg = const Color(0xFFFDE8E6);
+        fg = _redDeep;
+        label = 'ปิดรับอยู่ · กดเพื่อเปิด';
+      } else if (s == SvcStatus.ready) {
         dot = const Color(0xFF16A34A);
         bg = const Color(0xFFE6F6EC);
         fg = const Color(0xFF0E7A36);
@@ -309,9 +338,9 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
         dot = _red;
         bg = const Color(0xFFFDE8E6);
         fg = _redDeep;
-        label = 'ยังไม่พร้อม';
+        label = 'ต่อเซิร์ฟเวอร์ไม่ได้ · เช็กเน็ต';
       }
-      return Container(
+      final pill = Container(
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: ShapeDecoration(color: bg, shape: deksorCut(8)),
@@ -341,6 +370,14 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
             const SizedBox(width: 8),
             Text(label, style: _text(13.5, color: fg, weight: FontWeight.w700)),
           ],
+        ),
+      );
+      if (!off) return pill;
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () async => await start_service(true),
+          child: pill,
         ),
       );
     });
