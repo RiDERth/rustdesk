@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const String kDeksorVersion = '0.7';
+const String kDeksorVersion = '0.8';
 
 class DeksorColors {
   static const Color red = Color(0xFFE0312B);

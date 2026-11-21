@@ -8,7 +8,6 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/peer_tab_page.dart';
 import 'package:flutter_hbb/desktop/widgets/deksor_gate.dart';
 import 'package:flutter_hbb/desktop/widgets/deksor_update.dart';
-import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -82,6 +81,7 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
   late final AnimationController _loop;
   late final AnimationController _intro;
   final TextEditingController _idInput = TextEditingController();
+  final FocusNode _idFocus = FocusNode();
   Timer? _clipTimer;
   Timer? _copiedTimer;
   String _clip = '';
@@ -102,6 +102,9 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
       _introPlayed = true;
       _intro.forward();
     }
+    _idFocus.addListener(() {
+      if (mounted) setState(() {});
+    });
     _readClipboard();
     _clipTimer =
         Timer.periodic(const Duration(seconds: 2), (_) => _readClipboard());
@@ -114,6 +117,7 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
     _loop.dispose();
     _intro.dispose();
     _idInput.dispose();
+    _idFocus.dispose();
     super.dispose();
   }
 
@@ -540,23 +544,11 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 0, 22, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            flex: 5,
-            child: _rise(_portal(), 0.6, dy: 40),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            flex: 6,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(width: 300, child: _rise(_connectCard(), 0.8)),
-                const SizedBox(width: 12),
-                Expanded(child: _rise(_peersCard(), 0.86)),
-              ],
-            ),
-          ),
+          _rise(_connectCard(), 0.6, dy: 40),
+          const SizedBox(height: 14),
+          Expanded(child: _rise(_peersCard(), 0.86)),
         ],
       ),
     );
@@ -603,133 +595,206 @@ class _DeksorHomeState extends State<DeksorHome> with TickerProviderStateMixin {
   }
 
   Widget _connectCard() {
+    final hasText = _idInput.text.trim().isNotEmpty;
     return Material(
       color: _ink,
-      shape: deksorCut(18),
+      shape: deksorCut(22),
       clipBehavior: Clip.antiAlias,
+      elevation: 0,
       child: Stack(
         children: [
           Positioned(
-            right: -90,
-            top: -100,
+            right: -120,
+            top: -140,
             child: Container(
-              width: 220,
-              height: 220,
+              width: 420,
+              height: 420,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [Color(0x73FF2D3A), Color(0x00FF2D3A)],
+                  colors: [Color(0x66FF2D3A), Color(0x00FF2D3A)],
                 ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            padding: const EdgeInsets.fromLTRB(24, 20, 18, 22),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('เปิดประตูไปเครื่องอื่น',
-                    style: _text(19, color: Colors.white, weight: FontWeight.w700)),
-                const SizedBox(height: 12),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 380),
-                  switchInCurve: Curves.easeOutBack,
-                  transitionBuilder: (c, a) => ScaleTransition(
-                      scale: a, child: FadeTransition(opacity: a, child: c)),
-                  child: _clip.isEmpty
-                      ? Text(
-                          'คัดลอกเลขเครื่องจาก LINE แล้วมันจะโผล่ตรงนี้เอง',
-                          key: const ValueKey('noclip'),
-                          style: _text(13.5, color: const Color(0xFFB9ADA8)),
-                        )
-                      : Container(
-                          key: ValueKey(_clip),
-                          padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
-                          decoration: ShapeDecoration(
-                            gradient: const LinearGradient(
-                                colors: [_red, _redDeep]),
-                            shape: deksorCut(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('เจอเลขที่คุณคัดลอกไว้',
-                                        style: _text(12.5,
-                                            color: const Color(0xFFFFD9D4))),
-                                    FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(_clip,
-                                          style: _display(20,
-                                              color: Colors.white, spacing: 1)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                width: 96,
-                                child: _DkButton(
-                                  label: 'เข้าเลย',
-                                  icon: Icons.arrow_forward_rounded,
-                                  gradient: const LinearGradient(
-                                      colors: [Colors.white, Colors.white]),
-                                  fg: _redDeep,
-                                  glow: Colors.black,
-                                  height: 42,
-                                  onTap: () => _go(_clip),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 46,
-                        decoration: ShapeDecoration(
-                            color: const Color(0xFF2A2120), shape: deksorCut(10)),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        alignment: Alignment.centerLeft,
-                        child: TextField(
-                          controller: _idInput,
-                          onSubmitted: _go,
-                          keyboardType: TextInputType.number,
-                          cursorColor: _gold,
-                          style: _display(16, color: Colors.white, spacing: 1),
-                          decoration: InputDecoration(
-                            isCollapsed: true,
-                            border: InputBorder.none,
-                            hintText: 'หรือพิมพ์เลขเครื่อง',
-                            hintStyle: _text(15, color: const Color(0xFF8F837E)),
-                          ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('เปิดประตูไปเครื่องอื่น',
+                          style: _text(26,
+                              color: Colors.white, weight: FontWeight.w800)),
+                      const SizedBox(height: 10),
+                      SizedBox(height: 56, child: _clipSlot()),
+                      const SizedBox(height: 12),
+                      _bigInput(),
+                      const SizedBox(height: 12),
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 250),
+                        opacity: hasText ? 1 : 0.55,
+                        child: _DkButton(
+                          label: 'เปิดประตู',
+                          icon: Icons.arrow_forward_rounded,
+                          gradient: const LinearGradient(
+                              colors: [_goldPale, _orange, _red]),
+                          fg: const Color(0xFF2A0F02),
+                          glow: _orange,
+                          height: 64,
+                          fontSize: 23,
+                          iconSize: 26,
+                          onTap: () => _go(_idInput.text),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    SizedBox(
-                      width: 54,
-                      child: _DkButton(
-                        label: '',
-                        icon: Icons.arrow_forward_rounded,
-                        gradient: const LinearGradient(colors: [_goldPale, _orange]),
-                        fg: const Color(0xFF3A1A02),
-                        glow: _orange,
-                        height: 46,
-                        onTap: () => _go(_idInput.text),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 10),
+                SizedBox(width: 200, height: 260, child: _portal()),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _clipSlot() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 380),
+      switchInCurve: Curves.easeOutBack,
+      transitionBuilder: (c, a) =>
+          ScaleTransition(scale: a, child: FadeTransition(opacity: a, child: c)),
+      child: _clip.isEmpty
+          ? Align(
+              key: const ValueKey('noclip'),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'พิมพ์เลขได้เลย หรือคัดลอกเลขจาก LINE แล้วมันจะเด้งขึ้นมาเอง',
+                style: _text(15, color: const Color(0xFFC7BBB6)),
+              ),
+            )
+          : Container(
+              key: ValueKey(_clip),
+              padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+              decoration: ShapeDecoration(
+                gradient: const LinearGradient(colors: [_red, _redDeep]),
+                shape: deksorCut(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.content_paste_go_rounded,
+                      color: Colors.white, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(_groupId(_clip),
+                          style: _display(24, color: Colors.white, spacing: 2)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 112,
+                    child: _DkButton(
+                      label: 'เข้าเลย',
+                      icon: Icons.bolt_rounded,
+                      gradient: const LinearGradient(
+                          colors: [Colors.white, Colors.white]),
+                      fg: _redDeep,
+                      glow: Colors.black,
+                      height: 44,
+                      onTap: () => _go(_clip),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _bigInput() {
+    final focused = _idFocus.hasFocus;
+    return AnimatedBuilder(
+      animation: _loop,
+      builder: (_, child) {
+        final pulse = 0.5 + 0.5 * math.sin(_loop.value * math.pi * 2 * 6);
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          height: 84,
+          decoration: ShapeDecoration(
+            color: const Color(0xFF2A1F1D),
+            shape: BeveledRectangleBorder(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(14),
+                bottomRight: Radius.circular(14),
+              ),
+              side: BorderSide(
+                color: focused
+                    ? _gold
+                    : _gold.withOpacity(0.25 + 0.35 * pulse),
+                width: focused ? 2.5 : 1.5,
+              ),
+            ),
+            shadows: [
+              BoxShadow(
+                color: _gold.withOpacity(focused ? 0.35 : 0.12 * pulse),
+                blurRadius: 28,
+                spreadRadius: -6,
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          alignment: Alignment.centerLeft,
+          child: child,
+        );
+      },
+      child: Row(
+        children: [
+          const Icon(Icons.dialpad_rounded, color: _gold, size: 28),
+          const SizedBox(width: 14),
+          Expanded(
+            child: TextField(
+              controller: _idInput,
+              focusNode: _idFocus,
+              autofocus: true,
+              onSubmitted: _go,
+              onChanged: (_) => setState(() {}),
+              inputFormatters: [_IdFormatter()],
+              keyboardType: TextInputType.number,
+              cursorColor: _gold,
+              cursorWidth: 3,
+              style: _display(38, color: Colors.white, spacing: 3),
+              decoration: InputDecoration(
+                isCollapsed: true,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                hintText: 'ใส่เลขเครื่อง',
+                hintStyle: _text(28,
+                    color: const Color(0xFF8F837E), weight: FontWeight.w600),
+              ),
+            ),
+          ),
+          if (_idInput.text.isNotEmpty)
+            IconButton(
+              tooltip: 'ล้าง',
+              onPressed: () {
+                _idInput.clear();
+                _idFocus.requestFocus();
+                setState(() {});
+              },
+              icon: const Icon(Icons.close_rounded,
+                  color: Color(0xFF8F837E), size: 24),
+            ),
         ],
       ),
     );
@@ -902,6 +967,8 @@ class _DkButton extends StatefulWidget {
   final Color glow;
   final VoidCallback onTap;
   final double height;
+  final double fontSize;
+  final double iconSize;
 
   const _DkButton({
     Key? key,
@@ -912,6 +979,8 @@ class _DkButton extends StatefulWidget {
     required this.glow,
     required this.onTap,
     this.height = 52,
+    this.fontSize = 16.5,
+    this.iconSize = 19,
   }) : super(key: key);
 
   @override
@@ -987,14 +1056,14 @@ class _DkButtonState extends State<_DkButton> with SingleTickerProviderStateMixi
                         transitionBuilder: (c, a) =>
                             ScaleTransition(scale: a, child: c),
                         child: Icon(widget.icon,
-                            key: ValueKey(widget.icon), size: 19, color: widget.fg),
+                            key: ValueKey(widget.icon), size: widget.iconSize, color: widget.fg),
                       ),
                       if (widget.label.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(widget.label,
                               overflow: TextOverflow.ellipsis,
-                              style: _text(16.5,
+                              style: _text(widget.fontSize,
                                   color: widget.fg, weight: FontWeight.w700)),
                         ),
                       ],
@@ -1386,4 +1455,27 @@ class _IntroMarkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _IntroMarkPainter old) => old.p != p;
+}
+
+String _groupId(String raw) {
+  final d = raw.replaceAll(RegExp(r'\s'), '');
+  if (!RegExp(r'^\d+$').hasMatch(d)) return raw;
+  final b = StringBuffer();
+  for (var i = 0; i < d.length; i++) {
+    if (i > 0 && (d.length - i) % 3 == 0) b.write(' ');
+    b.write(d[i]);
+  }
+  return b.toString();
+}
+
+class _IdFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final raw = newValue.text.replaceAll(RegExp(r'[\s-]'), '');
+    if (!RegExp(r'^\d*$').hasMatch(raw)) return newValue;
+    final s = _groupId(raw);
+    return TextEditingValue(
+        text: s, selection: TextSelection.collapsed(offset: s.length));
+  }
 }
