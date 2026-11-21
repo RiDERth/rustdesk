@@ -248,7 +248,7 @@ class ColorThemeExtension extends ThemeExtension<ColorThemeExtension> {
 class MyTheme {
   MyTheme._();
 
-  static const Color grayBg = Color(0xFFEFEFF2);
+  static const Color grayBg = Color(0xFFF4F0EC);
   static const Color accent = Color(0xFFE0312B);
   static const Color accent50 = Color(0x77E0312B);
   static const Color accent80 = Color(0xAAE0312B);
@@ -577,7 +577,7 @@ class MyTheme {
   );
 
   static ThemeMode getThemeModePreference() {
-    return themeModeFromString(bind.mainGetLocalOption(key: kCommConfKeyTheme));
+    return ThemeMode.light;
   }
 
   static Future<void> changeDarkMode(ThemeMode mode) async {

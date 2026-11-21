@@ -82,11 +82,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
-      if (bind.isCustomClient())
-        Align(
-          alignment: Alignment.center,
-          child: loadPowered(context),
-        ),
       Row(
         children: [
           const Expanded(child: DeksorBrand()),
@@ -96,7 +91,39 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       if (!isOutgoingOnly)
         DeksorIdCard(idController: gFFI.serverModel.serverId)
             .marginOnly(left: 14, right: 14, bottom: 10),
-      if (!isOutgoingOnly) buildPasswordBoard(context),
+      if (!isOutgoingOnly)
+        Material(
+          color: DeksorColors.ink,
+          shape: deksorCut(18),
+          clipBehavior: Clip.antiAlias,
+          child: Theme(
+            data: MyTheme.darkTheme,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.shield_outlined,
+                        size: 18, color: DeksorColors.gold),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'ใครจะเข้า ต้องผ่านประตูนี้',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ).marginOnly(left: 18, right: 14, top: 14),
+                Builder(builder: (context) => buildPasswordBoard(context)),
+              ],
+            ),
+          ),
+        ).marginOnly(left: 14, right: 14),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -134,7 +161,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: 280.0,
+        width: 340.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -186,7 +213,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   buildRightPane(BuildContext context) {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: DeksorColors.paper,
       child: ConnectionPage(),
     );
   }
@@ -624,17 +651,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       children: [
         Container(
           margin: EdgeInsets.fromLTRB(
-              0, marginTop, 0, bind.isIncomingOnly() ? marginTop : 0),
+              14, marginTop, 14, bind.isIncomingOnly() ? marginTop : 0),
           child: Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color.fromARGB(255, 226, 66, 188),
-                  Color.fromARGB(255, 244, 114, 124),
-                ],
-              )),
+              decoration: ShapeDecoration(
+                  color: DeksorColors.red, shape: deksorCut(18)),
               padding: EdgeInsets.all(20),
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,

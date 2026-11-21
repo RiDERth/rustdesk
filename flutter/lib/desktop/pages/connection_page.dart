@@ -133,7 +133,6 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
             if (!isIncomingOnly) startServiceWidget(),
             // ready && public
             // No need to show the guide if is custom client.
-            if (!isIncomingOnly) setupServerWidget(),
           ],
         );
 
@@ -379,9 +378,12 @@ class _ConnectionPageState extends State<ConnectionPage>
     var w = Container(
       width: 320 + 20 * 2,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-      decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(13)),
-          border: Border.all(color: Theme.of(context).colorScheme.background)),
+      decoration: const ShapeDecoration(
+          color: Colors.white,
+          shape: BeveledRectangleBorder(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18)))),
       child: Ink(
         child: Column(
           children: [

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const String kDeksorVersion = '0.4';
+const String kDeksorVersion = '0.5';
 
 class DeksorColors {
   static const Color red = Color(0xFFE0312B);
@@ -269,7 +269,21 @@ class DeksorIdCard extends StatelessWidget {
           Container(
             color: const Color(0xFFFBF7F3),
             padding: const EdgeInsets.only(top: 14),
-            child: const DeksorGate(),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 190,
+                  height: 132,
+                  decoration: const BoxDecoration(
+                    gradient: RadialGradient(
+                      colors: [Color(0xB3FFD98A), Color(0x00FFD98A)],
+                    ),
+                  ),
+                ),
+                const DeksorGate(),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
@@ -277,7 +291,7 @@ class DeksorIdCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  translate('ID'),
+                  'เลขเครื่องนี้',
                   style: const TextStyle(
                     fontSize: 12.5,
                     color: DeksorColors.mute,
@@ -305,13 +319,28 @@ class DeksorIdCard extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 6),
-                Container(width: 26, height: 3, color: DeksorColors.red),
+                Row(
+                  children: [
+                    Container(width: 26, height: 3, color: DeksorColors.red),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'บอกเลขนี้ให้คนที่จะเข้ามาช่วย',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: DeksorColors.mute,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: DeksorButton(
-                        label: translate('Copy'),
+                        label: 'คัดลอก',
                         icon: Icons.copy_rounded,
                         color: DeksorColors.gold,
                         textColor: DeksorColors.goldText,
@@ -321,7 +350,7 @@ class DeksorIdCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: DeksorButton(
-                        label: 'LINE',
+                        label: 'ส่ง LINE',
                         icon: Icons.send_rounded,
                         color: DeksorColors.line,
                         textColor: Colors.white,

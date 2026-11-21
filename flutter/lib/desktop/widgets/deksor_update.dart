@@ -318,6 +318,10 @@ class _DeksorUpdateFooterState extends State<DeksorUpdateFooter> {
             ),
           ).marginOnly(left: 14, right: 14, bottom: 8),
         _versionLine(),
+        const Text(
+          'แกนหลัก RustDesk (โอเพนซอร์ส)',
+          style: TextStyle(fontSize: 10.5, color: DeksorColors.mute),
+        ).marginOnly(top: 2),
       ],
     );
   }
